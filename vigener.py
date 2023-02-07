@@ -5,12 +5,6 @@ class VigenerCryptographer:
         self.key_index = 0
         self.alphabet = alphabet
         self.alphabet_len = len(alphabet)
-        self.alphabet_dict = {}
-        self.generate_alphabet_dict()
-
-    def generate_alphabet_dict(self):
-        for i in range(self.alphabet_len):
-            self.alphabet_dict[self.alphabet[i]] = i
 
     def get_char_serial_number(self, char):
         return self.alphabet.find(char)
