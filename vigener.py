@@ -1,50 +1,60 @@
-def isRusChr(char):
-    return ord('а') <= ord(char) <= ord('ё')
+class VigenerCryptographer:
+    def __init__(self, key, alphabet):
+        self.key = key
+        self.key_len = len(key)
+        self.key_index = 0
+        self.alphabet = alphabet
+        self.alphabet_len = len(alphabet)
+        self.alphabet_dict = {}
+        self.generate_alphabet_dict()
 
+    def generate_alphabet_dict(self):
+        for i in range(self.alphabet_len):
+            self.alphabet_dict[self.alphabet[i]] = i
 
-def getRusCharRealSN(char):
-    if ord(char) <= ord('е'):
-        return ord(char) - ord('а')
-    if ord(char) <= ord('я'):
-        return ord(char) + 1 - ord('а')
-    return ord('е') + 1 - ord('а')
+    def get_char_serial_number(self, char):
+        return self.alphabet.find(char)
 
+    def is_in_alphabet(self, char):
+        return self.get_char_serial_number(char) != -1
 
-def getRusCharUTFBySN(serial_num):
-    if serial_num <= 5:
-        return chr(ord('а') + serial_num)
-    if serial_num == 6:
-        return 'ё'
-    return chr(ord('а') + serial_num - 1)
+    def get_UTF_from_char_serial_number(self, serial_num):
+        return self.alphabet[serial_num]
 
+    def get_new_char(self, char, delta):
+        return self.alphabet[
+            (self.get_char_serial_number(char) + delta) % self.alphabet_len
+        ]
 
-def cycleMove(serial_num, delta):
-    return (serial_num + delta) % 33
+    @property
+    def next_key_index(self):
+        self.key_index += 1
+        self.key_index %= self.key_len
+        return self.key_index
 
+    ENCODE = 1
+    DECODE = -1
 
-def viziner_step(string, key, encode=True):
-    res = []
-    key_len = len(key)
-    key_index = 0
-    for i in range(len(string)):
-        char = string[i]
-        if isRusChr(string[i]):
-            delta = getRusCharRealSN(key[key_index])
-            if not encode:
-                delta = -delta
-            new_sn = cycleMove(getRusCharRealSN(string[i]), delta)
-            char = getRusCharUTFBySN(new_sn)
-            key_index = (key_index + 1) % key_len
-        res.append(char)
-    return ''.join(res)
+    def step(self, string, direction=1):
+        res = []
+        self.key_index = -1
+        for char in string:
+            if self.is_in_alphabet(char):
+                delta = self.get_char_serial_number(self.key[self.next_key_index])
+                if direction == self.DECODE:
+                    delta = -delta
+                char = self.get_new_char(char, delta)
+            res.append(char)
+        return ''.join(res)
 
 
 def main():
     string = "зск гддъ щляяды? стояъдян, ры жпат унтлшо юошмс ьэбцт асеаьёдь, црод щнаваглнё ксд гяпдц оабаи рыкипдцмлъ, щлоталц м ывфохмвучвфо хмв (02.05.2018) ъ крху бпсдсяадъся гймъсъ н фяоисняъш ийб готнм ийюэюхдрдит."
     key = "оиаипсне"
     times = 2
+    vigener_processor = VigenerCryptographer(key, "абвгдеёжзийклмнопрстуфхцчшщъыьэюя")
     for _ in range(times):
-        string = viziner_step(string, key, encode=False)
+        string = vigener_processor.step(string, -1)
     print(string)
 
 
